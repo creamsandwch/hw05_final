@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Последние изменения на сайте
+{% endblock %}
+{% block content %}
+  <h1>Главная страница</h1>
+  {% load cache %}
+  {% cache 20 index_page %}
+  {% for post in page_obj %}
+    {% include 'posts/includes/post_card.html' with show_group_link=True %}
+    {% if not forloop.last %}<hr>{% endif %}
+  {% endfor %}
+  {% endcache %}
+  {% include 'posts/includes/paginator.html' %}
+{% endblock %}  

@@ -1,0 +1,69 @@
+Operations to perform:
+  Synchronize unmigrated apps: about, messages, staticfiles
+  Apply all migrations: admin, auth, contenttypes, posts, sessions, thumbnail
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying posts.0001_initial... OK
+  Applying posts.0002_auto_20221021_0932... OK
+  Applying posts.0003_auto_20221021_1454... OK
+  Applying posts.0004_auto_20221031_0849... OK
+  Applying posts.0005_auto_20221128_0928... OK
+  Applying posts.0006_post_image... OK
+  Applying posts.0007_comment... OK
+  Applying posts.0008_auto_20221129_1558... OK
+  Applying sessions.0001_initial... OK
+  Applying thumbnail.0001_initial... OK
+System check identified no issues (0 silenced).
+оступность всех остальных url-адресов. ... ok
+test_urls_templates_used (posts.tests.test_urls.StaticURLTests)
+Проверяем, верный ли шаблон используется при обращении по ... ok
+test_commentform_doesnt_show_for_unauthorized_user (posts.tests.test_views.PostViewsTest)
+Проверяем, что форма комментирования не отображается ... ok
+test_group_list_view_shows_correct_context (posts.tests.test_views.PostViewsTest)
+Проверяем, что group_list view передает правильный ... ok
+test_group_list_view_shows_correct_group (posts.tests.test_views.PostViewsTest) ... ok
+test_if_group_is_set_post_is_on_pages (posts.tests.test_views.PostViewsTest)
+Проверяем, что если при создании поста указать ... ok
+test_index_shows_correct_context (posts.tests.test_views.PostViewsTest)
+Проверяем, что index view передает правильный ... ok
+test_post_create_view_show_correct_context (posts.tests.test_views.PostViewsTest)
+Проверяем, что post_create и post_view передает правильный ... ok
+test_post_detail_view_shows_correct_context (posts.tests.test_views.PostViewsTest)
+Проверяем, что detail_view правильно передает context. ... ok
+test_post_profile_view_shows_correct_context (posts.tests.test_views.PostViewsTest)
+Проверяем, что profile_view передает правильный ... ok
+test_post_profile_view_shows_post (posts.tests.test_views.PostViewsTest) ... ok
+test_sent_comment_shows_in_post_detail_context (posts.tests.test_views.PostViewsTest)
+Проверяем, что в контекст страницы с детальными данными ... ok
+test_views_show_thumbnail_in_pages_context (posts.tests.test_views.PostViewsTest)
+Проверяем, что на всех страницах, где отображается пост ... ok
+test_views_use_correct_templates (posts.tests.test_views.PostViewsTest)
+Проверяем, что view-функции приложения posts ... ok
+test_pagination_first_page (posts.tests.test_views.TestPaginator)
+Проверяем корректность работы паджинатора ... ok
+test_creationform_creates_new_user (users.tests.test_forms.UserFormTest)
+Валидная форма CreationForm создаёт новую запись в БД. ... ok
+
+----------------------------------------------------------------------
+Ran 27 tests in 0.905s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load user_filters %}
+
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <h1>Привет, я автор</h1>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <p>
+        Тут я размещу информацию о себе, используя свои умения верстать.
+         Картинки, блоки, элементы бустрап. А может быть, просто напишу несколько абзацев текста.
+      </p>
+  </div>
+  <hr>
+  <br>
+  <div class="row">
+    <div class="col-md-4 mb-2">
+      <div class="card bg-light" style="height: 30rem">
+        <div>
+          <div class="card-header bg-white p-0">
+            <image class="card-img-top" src="https://www.varsitytutors.com/assets/vt-hotmath-legacy/hotmath_help/topics/graphing-sine-function/sine-graph.gif">
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            Вот так выглядит мой стандартный workflow, где x=t, а y=самоощущение.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-2">
+      <div class="card bg-light" style="height: 30rem">
+        <div class="card-header bg-white p-0">
+          <image class="card-img-top" src="https://avatars.githubusercontent.com/u/110629066?v=4">
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            А вот так выглядит <a href="https://github.com/creamsandwch">мой Github<a/>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-2">
+      <div class="card bg-light" style="height: 30rem">
+        <div class="card-header bg-white p-0">
+          <image class="card-img-top" src="https://avatars.mds.yandex.net/get-mpic/5238586/img_id5714795203345396191.jpeg/orig">
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            А это лучший <a href="https://music.yandex.ru/album/5415964">альбом,<a/>
+            который вы ещё не слышали.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 
