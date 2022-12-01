@@ -1,17 +1,14 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Последние изменения на сайте
+  Мои подписки
 {% endblock %}
 {% block content %}
-  <h1>Главная страница</h1>
+  <h1>Мои подписки</h1>
   {% include 'posts/includes/switcher.html' %}
-  {% load cache %}
-  {% cache 20 index_page %}
   {% for post in page_obj %}
     {% include 'posts/includes/post_card.html' with show_group_link=True %}
     {% if not forloop.last %}<hr>{% endif %}
   {% endfor %}
-  {% endcache %}
   {% include 'posts/includes/paginator.html' %}
 {% endblock %}  

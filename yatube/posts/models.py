@@ -45,9 +45,6 @@ class Post(CreatedModel):
         blank=True,
     )
 
-    class Meta:
-        ordering = ['-created']
-
     def __str__(self) -> str:
         return self.text[:settings.POST_CHARS_VIEWED]
 
@@ -74,3 +71,19 @@ class Comment(CreatedModel):
 
     def __str__(self):
         return self.text[:settings.POST_CHARS_VIEWED]
+
+
+class Follow(CreatedModel):
+    """Наследуем от CreatedModel для отслеживания даты подписки."""
+    user = models.ForeignKey(
+        User,
+        verbose_name='подписчик',
+        related_name='follower',
+        on_delete=models.CASCADE
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name='отслеживаемый автор',
+        related_name='following',
+        on_delete=models.CASCADE
+    )

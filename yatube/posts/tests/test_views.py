@@ -211,10 +211,9 @@ class PostViewsTest(TestCase):
         )
         self.assertContains(
             response,
-            PostViewsTest.author,
+            PostViewsTest.test_post,
             msg_prefix=(
-                'В контекст не передан пользователь-автор,'
-                ' или передан неверный.'
+                'В контекст не передан тестовый пост,'
             )
         )
         post_attrs = self.fill_post_fields(slug_num=1)
