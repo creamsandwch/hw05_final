@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# test logs
+test_log.txt
+
+# backend test emails
+sent_emails/
+
 # Distribution / packaging
 .Python
 build/

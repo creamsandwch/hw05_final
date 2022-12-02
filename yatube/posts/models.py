@@ -1,5 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import pre_save
+from django.core.exceptions import ValidationError
 
 from core.models import CreatedModel
 from django.conf import settings
@@ -87,3 +90,12 @@ class Follow(CreatedModel):
         related_name='following',
         on_delete=models.CASCADE
     )
+
+    class Meta:
+        unique_together = (('user', 'author'),)
+
+
+@receiver(pre_save, sender=Follow)
+def check_for_self_following(sender, instance, **kwargs):
+    if instance.user == instance.author:
+        raise ValidationError('Подписаться на самого себя нельзя.')
