@@ -1,8 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.dispatch import receiver
-from django.db.models.signals import pre_save
-from django.core.exceptions import ValidationError
 
 from core.models import CreatedModel
 from django.conf import settings
@@ -76,26 +73,24 @@ class Comment(CreatedModel):
         return self.text[:settings.POST_CHARS_VIEWED]
 
 
-class Follow(CreatedModel):
-    """Наследуем от CreatedModel для отслеживания даты подписки."""
+class Follow(models.Model):
     user = models.ForeignKey(
         User,
         verbose_name='подписчик',
         related_name='follower',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     author = models.ForeignKey(
         User,
         verbose_name='отслеживаемый автор',
         related_name='following',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
 
     class Meta:
-        unique_together = (('user', 'author'),)
-
-
-@receiver(pre_save, sender=Follow)
-def check_for_self_following(sender, instance, **kwargs):
-    if instance.user == instance.author:
-        raise ValidationError('Подписаться на самого себя нельзя.')
+        constraints = [
+            models.constraints.UniqueConstraint(
+                name='subscription_unique',
+                fields=['user', 'author']
+            ),
+        ]

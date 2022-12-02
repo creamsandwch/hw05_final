@@ -30,6 +30,9 @@ class PostViewsTest(TestCase):
         super().setUpClass()
         cls.author = User.objects.create_user(username='TestUser')
         cls.follow_author = User.objects.create_user(username='FollowedUser')
+        cls.unfollowed_author = User.objects.create_user(
+            username='UnfollowedUser'
+        )
         cls.group_1 = Group.objects.create(
             title='Первая тестовая группа',
             slug='test-slug-1',
@@ -51,8 +54,14 @@ class PostViewsTest(TestCase):
             content=cls.small_gif,
             content_type='image/gif'
         )
+        cls.test_post_3 = Post.objects.create(
+            text='Пост автора, на которого не подписаны',
+            group=cls.group_1,
+            author=cls.unfollowed_author,
+            image=cls.uploaded
+        )
         cls.test_post_2 = Post.objects.create(
-            text='Тестовый пост 2',
+            text='Пост автора, на которго подписаны',
             group=cls.group_2,
             author=cls.follow_author,
             image=cls.uploaded
@@ -411,7 +420,7 @@ class PostViewsTest(TestCase):
             )
         )
 
-    def test_followed_authors_posts_appear_on_follow_index_for_followers(self):
+    def test_followed_authors_posts_appear_for_followers(self):
         """Проверяем, отображаются ли посты на странице избранных авторов
         для авторизованного пользователя, подписанного на этих авторов."""
         self.authorized_client.get(
@@ -427,6 +436,32 @@ class PostViewsTest(TestCase):
             response,
             PostViewsTest.test_post_2,
             msg_prefix='Пост отслеживаемого автора не отображается на странице'
+        )
+
+    def test_unfollowed_authors_posts_not_appearing_for_followers(self):
+        """Проверяем, что посты авторов, на которых не подписан пользователь,
+        не отображаются для него на странице избранных авторов."""
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': PostViewsTest.follow_author.username}
+            )
+        )
+        response = self.authorized_client.get(
+            reverse('posts:follow_index')
+        )
+        self.assertNotContains(
+            response,
+            PostViewsTest.test_post_3,
+            msg_prefix='Пост неотслеживаемого автора отображается на странице'
+        )
+        self.assertNotContains(
+            response,
+            PostViewsTest.test_post_2,
+            msg_prefix=(
+                'Пост автора, от которого отписался пользователь, '
+                'отображается на странице'
+            )
         )
 
 
