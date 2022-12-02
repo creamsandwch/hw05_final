@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.core.cache import cache
 from django import forms
 
-from ..models import User, Post, Group, Comment
+from ..models import User, Post, Group, Comment, Follow
 from django.conf import settings
 
 
@@ -29,6 +29,7 @@ class PostViewsTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.author = User.objects.create_user(username='TestUser')
+        cls.follow_author = User.objects.create_user(username='FollowedUser')
         cls.group_1 = Group.objects.create(
             title='Первая тестовая группа',
             slug='test-slug-1',
@@ -49,6 +50,12 @@ class PostViewsTest(TestCase):
             name='small.gif',
             content=cls.small_gif,
             content_type='image/gif'
+        )
+        cls.test_post_2 = Post.objects.create(
+            text='Тестовый пост 2',
+            group=cls.group_2,
+            author=cls.follow_author,
+            image=cls.uploaded
         )
         cls.test_post = Post.objects.create(
             text='Тестовый пост',
@@ -335,6 +342,91 @@ class PostViewsTest(TestCase):
             response,
             cache_test_post.text,
             msg_prefix='Пост не был удалён из кэша страницы'
+        )
+
+    def test_authorized_can_follow_and_unfollow_authors(self):
+        """Проверяем, что авторизованный пользователь может
+        подписываться и отписываться на/от авторов."""
+        kwargs = {'username': PostViewsTest.follow_author.username}
+        url = reverse(
+            'posts:profile',
+            kwargs=kwargs
+        )
+        follows_for_user_count = Follow.objects.filter(
+            user=PostViewsTest.author
+        ).count()
+        response = self.authorized_client.get(url)
+        self.assertContains(
+            response,
+            'Подписаться',
+            msg_prefix=(
+                'Кнопка подписки не отображена на странице профиля автора '
+                'для авторизованного пользователя'
+            )
+        )
+        # TestUser подписывается на FollowedUser
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs=kwargs
+            )
+        )
+        self.assertEqual(
+            Follow.objects.filter(
+                user=PostViewsTest.author
+            ).count(),
+            follows_for_user_count + 1,
+            'Объект модели Follow не был записан в БД в результате подписки.'
+        )
+        response = self.authorized_client.get(url)
+        self.assertContains(
+            response,
+            'Отписаться',
+            msg_prefix=(
+                'Кнопка отписки не отображена на странице профиля автора '
+                'для авторизованного и подписавшегося на автора пользователя'
+            )
+        )
+        # TestUser отписывается от FollowedUser
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs=kwargs
+            )
+        )
+        self.assertEqual(
+            Follow.objects.filter(
+                user=PostViewsTest.author
+            ).count(),
+            follows_for_user_count,
+            'Объект модели Follow не был удален из БД в результате отписки.'
+        )
+        response = self.authorized_client.get(url)
+        self.assertContains(
+            response,
+            'Подписаться',
+            msg_prefix=(
+                'Кнопка отписки не отображена на странице профиля автора '
+                'для авторизованного и подписавшегося на автора пользователя'
+            )
+        )
+
+    def test_followed_authors_posts_appear_on_follow_index_for_followers(self):
+        """Проверяем, отображаются ли посты на странице избранных авторов
+        для авторизованного пользователя, подписанного на этих авторов."""
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': PostViewsTest.follow_author.username}
+            )
+        )
+        response = self.authorized_client.get(
+            reverse('posts:follow_index')
+        )
+        self.assertContains(
+            response,
+            PostViewsTest.test_post_2,
+            msg_prefix='Пост отслеживаемого автора не отображается на странице'
         )
 
 
