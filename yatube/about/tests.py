@@ -1,11 +1,9 @@
-from django.test import TestCase, Client
 from http import HTTPStatus
+
+from django.test import TestCase
 
 
 class AboutURLTest(TestCase):
-    def setUp(self):
-        self.guest_client = Client()
-
     def test_url_exists_at_desired_location(self):
         """Страницы /about/author/ и /about/tech/
         доступны любому пользователю."""
@@ -14,5 +12,6 @@ class AboutURLTest(TestCase):
             '/about/tech/',
         ]
         for url in urls:
-            response = self.guest_client.get(url)
-            self.assertEqual(response.status_code, HTTPStatus.OK)
+            with self.subTest(f'url "{url}" не найден.'):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, HTTPStatus.OK)

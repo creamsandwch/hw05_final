@@ -15,6 +15,7 @@ def index(request):
     page_obj = paginate(request, post_list, settings.POSTS_VIEWED)
     context = {
         'page_obj': page_obj,
+        'index': True,
     }
     return render(request, 'posts/index.html', context)
 
@@ -32,19 +33,18 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    posts = author.posts.all()
+    posts = author.posts.select_related('group').all()
     page_obj = paginate(request, posts, settings.POSTS_VIEWED)
     following = False
     if request.user.is_authenticated:
         following = Follow.objects.filter(
             user=request.user,
             author=author
-        )
+        ).exists()
     context = {
         'page_obj': page_obj,
         'author': author,
         'following': following,
-        'posts_count': posts.count(),
     }
     return render(request, 'posts/profile.html', context)
 
@@ -80,7 +80,7 @@ def post_create(request):
 @login_required
 def post_edit(request, post_id):
     edited_post = get_object_or_404(Post, id=post_id)
-    if not request.user == edited_post.author:
+    if request.user != edited_post.author:
         return redirect('posts:post_detail', post_id)
     form = PostForm(
         request.POST or None,
@@ -116,13 +116,14 @@ def follow_index(request):
     page_obj = paginate(request, posts, settings.POSTS_VIEWED)
     context = {
         'page_obj': page_obj,
+        'follow': True,
     }
     return render(request, 'posts/follow.html', context)
 
 
 @login_required
 def profile_follow(request, username):
-    author = User.objects.get(username=username)
+    author = get_object_or_404(User, username=username)
     if request.user != author:
         Follow.objects.get_or_create(
             user=request.user,
@@ -133,7 +134,7 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    author = User.objects.get(username=username)
+    author = get_object_or_404(User, username=username)
     Follow.objects.filter(
         user=request.user,
         author=author

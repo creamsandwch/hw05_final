@@ -42,11 +42,6 @@ urlpatterns = [
         ),
         name='password_change_done'
     ),
-
-
-
-
-
     path(
         'password_reset/',
         PasswordResetView.as_view(

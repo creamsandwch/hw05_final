@@ -1,6 +1,6 @@
-# posts/tests/test_urls.py
-from django.test import TestCase, Client
 from http import HTTPStatus
+
+from django.test import TestCase, Client
 
 from posts.models import User, Post, Group
 

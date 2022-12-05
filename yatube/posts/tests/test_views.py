@@ -114,30 +114,30 @@ class PostViewsTest(TestCase):
     def test_views_use_correct_templates(self):
         """Проверяем, что view-функции приложения posts
         используют правильные шаблоны."""
-        templates_pages_names = {
-            reverse('posts:index'): 'posts/index.html',
-            reverse(
+        templates_pages_names = [
+            (reverse('posts:index'), 'posts/index.html'),
+            (reverse(
                 'posts:group_list',
                 kwargs={'slug': PostViewsTest.group_1.slug}
-            ): 'posts/group_list.html',
-            reverse(
+            ), 'posts/group_list.html'),
+            (reverse(
                 'posts:post_detail',
                 kwargs={'post_id': PostViewsTest.test_post.id}
-            ): 'posts/post_detail.html',
-            reverse(
+            ), 'posts/post_detail.html'),
+            (reverse(
                 'posts:profile',
                 kwargs={'username': PostViewsTest.test_post.author.username}
-            ): 'posts/profile.html',
-            reverse('posts:post_create'): 'posts/create_post.html',
-            reverse(
+            ), 'posts/profile.html'),
+            (reverse('posts:post_create'), 'posts/create_post.html'),
+            (reverse(
                 'posts:post_edit',
                 kwargs={'post_id': PostViewsTest.test_post.id}
-            ): 'posts/create_post.html',
-        }
-        for reverse_name, template in templates_pages_names.items():
-            with self.subTest(reverse_name=reverse_name):
-                response = self.authorized_client.get(reverse_name)
-                self.assertTemplateUsed(response, template)
+            ), 'posts/create_post.html'),
+        ]
+        for reverse_name_template in templates_pages_names:
+            with self.subTest(reverse_name=reverse_name_template):
+                response = self.authorized_client.get(reverse_name_template[0])
+                self.assertTemplateUsed(response, reverse_name_template[1])
 
     def test_post_create_view_show_correct_context(self):
         """Проверяем, что post_create и post_view передает правильный
@@ -314,21 +314,22 @@ class PostViewsTest(TestCase):
             )
         ]
         for url in urls:
-            response = self.authorized_client.get(url)
-            if response.context.get('page_obj'):
-                self.assertEqual(
-                    response.context.get('page_obj')[0],
-                    PostViewsTest.test_post,
-                    ('Пост с прикрепленной картинкой не найден '
-                     f'по адресу {url}')
-                )
-            else:
-                self.assertEqual(
-                    response.context.get('post'),
-                    PostViewsTest.test_post,
-                    ('Пост с прикрепленной картинкой не найден '
-                     f'по адресу {url}')
-                )
+            with self.subTest(url=url):
+                response = self.authorized_client.get(url)
+                if response.context.get('page_obj'):
+                    self.assertEqual(
+                        response.context.get('page_obj')[0],
+                        PostViewsTest.test_post,
+                        ('Пост с прикрепленной картинкой не найден '
+                         f'по адресу {url}')
+                    )
+                else:
+                    self.assertEqual(
+                        response.context.get('post'),
+                        PostViewsTest.test_post,
+                        ('Пост с прикрепленной картинкой не найден '
+                         f'по адресу {url}')
+                    )
 
     def test_index_page_is_cached(self):
         """Проверяем работу кэша главной страницы."""
@@ -339,7 +340,7 @@ class PostViewsTest(TestCase):
         }
         cache_test_post = Post.objects.create(**data_dict)
         response = self.guest_client.get(reverse('posts:index'))
-        Post.objects.filter(**data_dict).delete()
+        cache_test_post.delete()
         self.assertContains(
             response,
             cache_test_post.text,
@@ -353,9 +354,9 @@ class PostViewsTest(TestCase):
             msg_prefix='Пост не был удалён из кэша страницы'
         )
 
-    def test_authorized_can_follow_and_unfollow_authors(self):
+    def test_authorized_can_follow_authors(self):
         """Проверяем, что авторизованный пользователь может
-        подписываться и отписываться на/от авторов."""
+        подписываться на авторов."""
         kwargs = {'username': PostViewsTest.follow_author.username}
         url = reverse(
             'posts:profile',
@@ -381,6 +382,13 @@ class PostViewsTest(TestCase):
             )
         )
         self.assertEqual(
+            Follow.objects.get(
+                user=PostViewsTest.author
+            ).author,
+            PostViewsTest.follow_author,
+            'Пользователь не подписался на указанного в профиле автора.'
+        )
+        self.assertEqual(
             Follow.objects.filter(
                 user=PostViewsTest.author
             ).count(),
@@ -396,6 +404,22 @@ class PostViewsTest(TestCase):
                 'для авторизованного и подписавшегося на автора пользователя'
             )
         )
+
+    def test_authorized_can_unfollow_authors(self):
+        """Проверяем, что авторизованный пользователь может отписываться
+        от авторов."""
+        kwargs = {'username': PostViewsTest.follow_author.username}
+        url = reverse(
+            'posts:profile',
+            kwargs=kwargs
+        )
+        Follow.objects.get_or_create(
+            user=PostViewsTest.author,
+            author=PostViewsTest.follow_author,
+        )
+        follows_for_user_count = Follow.objects.filter(
+            user=PostViewsTest.author
+        ).count()
         # TestUser отписывается от FollowedUser
         self.authorized_client.get(
             reverse(
@@ -407,7 +431,7 @@ class PostViewsTest(TestCase):
             Follow.objects.filter(
                 user=PostViewsTest.author
             ).count(),
-            follows_for_user_count,
+            follows_for_user_count - 1,
             'Объект модели Follow не был удален из БД в результате отписки.'
         )
         response = self.authorized_client.get(url)
@@ -423,11 +447,9 @@ class PostViewsTest(TestCase):
     def test_followed_authors_posts_appear_for_followers(self):
         """Проверяем, отображаются ли посты на странице избранных авторов
         для авторизованного пользователя, подписанного на этих авторов."""
-        self.authorized_client.get(
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': PostViewsTest.follow_author.username}
-            )
+        Follow.objects.get_or_create(
+            user=PostViewsTest.author,
+            author=PostViewsTest.follow_author,
         )
         response = self.authorized_client.get(
             reverse('posts:follow_index')
@@ -441,6 +463,10 @@ class PostViewsTest(TestCase):
     def test_unfollowed_authors_posts_not_appearing_for_followers(self):
         """Проверяем, что посты авторов, на которых не подписан пользователь,
         не отображаются для него на странице избранных авторов."""
+        Follow.objects.get_or_create(
+            user=PostViewsTest.author,
+            author=PostViewsTest.follow_author,
+        )
         self.authorized_client.get(
             reverse(
                 'posts:profile_unfollow',
@@ -454,14 +480,6 @@ class PostViewsTest(TestCase):
             response,
             PostViewsTest.test_post_3,
             msg_prefix='Пост неотслеживаемого автора отображается на странице'
-        )
-        self.assertNotContains(
-            response,
-            PostViewsTest.test_post_2,
-            msg_prefix=(
-                'Пост автора, от которого отписался пользователь, '
-                'отображается на странице'
-            )
         )
 
 
