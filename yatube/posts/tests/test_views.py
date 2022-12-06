@@ -317,9 +317,9 @@ class PostViewsTest(TestCase):
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)
                 if response.context.get('page_obj'):
-                    self.assertEqual(
-                        response.context.get('page_obj')[0],
+                    self.assertIn(
                         PostViewsTest.test_post,
+                        response.context.get('page_obj'),
                         ('Пост с прикрепленной картинкой не найден '
                          f'по адресу {url}')
                     )
@@ -358,22 +358,9 @@ class PostViewsTest(TestCase):
         """Проверяем, что авторизованный пользователь может
         подписываться на авторов."""
         kwargs = {'username': PostViewsTest.follow_author.username}
-        url = reverse(
-            'posts:profile',
-            kwargs=kwargs
-        )
         follows_for_user_count = Follow.objects.filter(
             user=PostViewsTest.author
         ).count()
-        response = self.authorized_client.get(url)
-        self.assertContains(
-            response,
-            'Подписаться',
-            msg_prefix=(
-                'Кнопка подписки не отображена на странице профиля автора '
-                'для авторизованного пользователя'
-            )
-        )
         # TestUser подписывается на FollowedUser
         self.authorized_client.get(
             reverse(
@@ -381,11 +368,11 @@ class PostViewsTest(TestCase):
                 kwargs=kwargs
             )
         )
-        self.assertEqual(
-            Follow.objects.get(
-                user=PostViewsTest.author
-            ).author,
-            PostViewsTest.follow_author,
+        self.assertTrue(
+            Follow.objects.filter(
+                user=PostViewsTest.author,
+                author=PostViewsTest.follow_author,
+            ).exists(),
             'Пользователь не подписался на указанного в профиле автора.'
         )
         self.assertEqual(
@@ -395,24 +382,11 @@ class PostViewsTest(TestCase):
             follows_for_user_count + 1,
             'Объект модели Follow не был записан в БД в результате подписки.'
         )
-        response = self.authorized_client.get(url)
-        self.assertContains(
-            response,
-            'Отписаться',
-            msg_prefix=(
-                'Кнопка отписки не отображена на странице профиля автора '
-                'для авторизованного и подписавшегося на автора пользователя'
-            )
-        )
 
     def test_authorized_can_unfollow_authors(self):
         """Проверяем, что авторизованный пользователь может отписываться
         от авторов."""
         kwargs = {'username': PostViewsTest.follow_author.username}
-        url = reverse(
-            'posts:profile',
-            kwargs=kwargs
-        )
         Follow.objects.get_or_create(
             user=PostViewsTest.author,
             author=PostViewsTest.follow_author,
@@ -433,15 +407,6 @@ class PostViewsTest(TestCase):
             ).count(),
             follows_for_user_count - 1,
             'Объект модели Follow не был удален из БД в результате отписки.'
-        )
-        response = self.authorized_client.get(url)
-        self.assertContains(
-            response,
-            'Подписаться',
-            msg_prefix=(
-                'Кнопка отписки не отображена на странице профиля автора '
-                'для авторизованного и подписавшегося на автора пользователя'
-            )
         )
 
     def test_followed_authors_posts_appear_for_followers(self):
