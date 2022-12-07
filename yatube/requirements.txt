@@ -1,3 +1,8 @@
-Django==2.2.19
+asgiref==3.5.2
+Django==3.2.16
+django-debug-toolbar==3.2.4
+Pillow==9.3.0
 pytz==2022.4
+sorl-thumbnail==12.9.0
 sqlparse==0.4.3
+typing-extensions==4.4.0
