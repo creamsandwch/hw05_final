@@ -21,6 +21,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '[::1]',
     'testserver',
+    'www.kreamsandwich.pythonanywhere.com',
+    'kreamsandwich.pythonanywhere.com',
 ]
 
 INSTALLED_APPS = [
