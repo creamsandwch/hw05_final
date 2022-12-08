@@ -12,7 +12,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SECRET_KEY = 'lcgy06%6)qtf8n5vzfetazxhubev@=%lgxi7^)=5&6jegv!r$k'
 
-DEBUG = True
+DEBUG = False
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
@@ -119,8 +119,9 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'), )
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 
 STATIC_URL = '/static/'
 
